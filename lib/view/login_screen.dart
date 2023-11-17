@@ -36,6 +36,22 @@ class LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            const SizedBox(
+              height: 20,
+            ),
+            const Center(
+              child: DefaultTextStyle(
+                style: TextStyle(
+                  fontSize: 40.0,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.black54,
+                ),
+                child: Text(
+                  'Login ',
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: _emailController,
               textAlign: TextAlign.left,
@@ -63,12 +79,12 @@ class LoginScreenState extends State<LoginScreen> {
               height: 24.0,
             ),
             ElevatedButton(
-              child: const Text('Log in'),
+              child: const Text('Submit'),
               onPressed: () async {
                 setState(() {
                   showSpinner = true;
                 });
-                // Login to existing account
+               
                 try {
                   UserCredential userCredential =
                       await _auth.signInWithEmailAndPassword(

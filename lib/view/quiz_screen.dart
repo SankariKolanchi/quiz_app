@@ -22,31 +22,81 @@ class _QuizWidgetState extends State<QuizWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: AppBar(  backgroundColor: Colors.white,
         title: Text('${widget.subject.subject}'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Center(
           child: PageView.builder(
-            scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              scrollDirection: Axis.horizontal,
               itemCount: _question?.length,
               itemBuilder: (context, i) {
-                final item=_question![i];
-                return  Column(
+                final item = _question![i];
+                //item.answer?.length > 1;
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(padding:const EdgeInsets.symmetric(vertical: 5),
-                    child: Text(
-                      item.question.toString(),
-                      style:const TextStyle(fontSize: 15,fontWeight: FontWeight.w400,color: Colors.black),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Text('${1+i}. ${item.question}',
+                        style: const TextStyle(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black),
+                      ),
                     ),
-                    )
+                    ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: item.options?.length,
+                        itemBuilder: (context, j) {
+                          final options = item.options![j];
+                          return InkWell(
+                            onTap: (){
+
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [ 
+                                 Icon(Icons.check_box_outline_blank_outlined,) ,
+                                 const SizedBox(width: 8),      
+                                  Text(
+                                   options.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        })
                   ],
                 );
               }),
         ),
       ),
+      bottomNavigationBar: SizedBox(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MaterialButton(
+              height: 45,
+                color: Colors.blue,
+                child: const Text(
+                  "Submit",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {}),
+          )),
     );
   }
 }
