@@ -40,6 +40,7 @@ dependencies:
   firebase_core: ^2.16.0
   cloud_firestore: ^4.9.2
   dio: 
+  http: 
  
 
 
