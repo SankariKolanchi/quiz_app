@@ -83,27 +83,29 @@ class Question {
   String? question;
   List<String>? options;
   List<String>? answer;
+  List<String>? submittedAnswer;
 
   Question({
     this.questionId,
     this.question,
     this.options,
     this.answer,
+    this.submittedAnswer,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
     final answerList =
         json["answer"] == null ? [] : [json["answer"].toString()];
     return Question(
-      questionId: json["question_id"],
-      question: json["question"],
-      options: json["options"] == null
-          ? []
-          : List<String>.from(json["options"]!.map((x) => x)),
-      answer: json["answer"] == null
-          ? []
-          : List<String>.from(answerList.map((x) => x)),
-    );
+        questionId: json["question_id"],
+        question: json["question"],
+        options: json["options"] == null
+            ? []
+            : List<String>.from(json["options"]!.map((x) => x)),
+        answer: json["answer"] == null
+            ? []
+            : List<String>.from(answerList.map((x) => x)),
+        submittedAnswer: json['submitted_answer']);
   }
 
   Map<String, dynamic> toJson() => {
@@ -113,5 +115,8 @@ class Question {
             options == null ? [] : List<dynamic>.from(options!.map((x) => x)),
         "answer":
             answer == null ? [] : List<dynamic>.from(answer!.map((x) => x)),
+        "submitted_answer": submittedAnswer == null
+            ? []
+            : List<dynamic>.from(submittedAnswer!.map((x) => x)),
       };
 }

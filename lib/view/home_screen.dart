@@ -1,7 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quizfirebase/controller/api.dart';
@@ -23,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String userEmail = '';
   bool isLoading = false;
   List<Subject>? subjects = [];
+  List<Map<String, dynamic>> summaryList = [];
 
   @override
   void initState() {
@@ -38,29 +35,62 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = await QuizApi().fetchQuizData();
       isLoading = false;
       subjects = data.quiz?.subjects;
-      log('subjects $subjects');
+
       setState(() {});
     } catch (e) {
       isLoading = false;
-      debugPrint('Error: $e'); 
+      debugPrint('Error: $e');
       setState(() {});
     }
   }
 
   Future<void> getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userEmail = prefs.getString('user_email') ?? '';
-    });
+    userEmail = prefs.getString('user_email') ?? '';
+    setState(() {});
   }
 
-  Future<void> _signOut(BuildContext context) async {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    await _auth.signOut();
-
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    final pref = await SharedPreferences.getInstance();
+    await pref.clear();
+    // ignore: use_build_context_synchronously
     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) {
       return const WelcomeScreen();
     }), (route) => false);
+  }
+
+  int _checkTotalAnswer(Subject subject) {
+    List<bool> answer = [];
+    for (final item in subject.questions!) {
+      final isAnswer = item.submittedAnswer
+              ?.where((p) => item.answer?.contains(p) == true)
+              .isNotEmpty ==
+          true;
+      if (isAnswer) {
+        answer.add(isAnswer);
+      }
+    }
+    return answer.length;
+  }
+
+  void _questionSummmary(dynamic res) {
+    if (res != null) {
+      final data = res as Map<String, dynamic>;
+      final subject = data['subject'] as Subject;
+      final correctAnswer = _checkTotalAnswer(subject);
+      final wrong = subject.subject?.length == correctAnswer
+          ? 0
+          : subject.subject!.length - correctAnswer;
+      final summary = {
+        'sub_name': subject.subject.toString(),
+        'wrong': wrong,
+        'correct': correctAnswer,
+        'question': subject.questions?.length
+      };
+      summaryList.add(summary);
+      setState(() {});
+    }
   }
 
   @override
@@ -70,57 +100,158 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text('Quiz App'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: PopupMenuButton(
+              color: Colors.white,
+              tooltip: 'Settings',
+              onSelected: (value) {
+                if (value == 'logout') {
+                  _signOut();
+                  return;
+                }
+              },
+              itemBuilder: (_) {
+                return [
+                  PopupMenuItem(
+                      value: 'logout',
+                      child: Text(
+                        "Logout",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ))
+                ];
+              },
+              child: const Icon(Icons.more_vert_outlined),
+            ),
+          )
+        ],
       ),
       body: isLoading
           ? const AppCircularWidget()
-          : Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  children: [
-                    Text(
-                      "Welcome : ${userEmail.split('@').first}".toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                      ),
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Welcome : ${userEmail.split('@').first}".toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
                     ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: ListView.builder(
-                          itemBuilder: (context, i) {
-                            final item = subjects![i];
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_)=> QuizWidget(subject:item)))
-;                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  boxShadow:   [
-                                    BoxShadow(
-                                        color: Colors.grey.shade500,
-                                        spreadRadius: 0.5,
-                                        blurRadius: 1)
-                                  ],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                padding: const EdgeInsets.all(16),
-                                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('${item.subject}'),
-                                   const Icon(Icons.arrow_forward_ios_outlined,size: 18,)
-                                  ],
-                                ),
-                              ),
-                            );
+                  ),
+                  const SizedBox(height: 20),
+                  ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(0),
+                      itemBuilder: (context, i) {
+                        final item = subjects![i];
+                        return InkWell(
+                          onTap: () async {
+                            final res = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => QuizWidget(subject: item)));
+                            _questionSummmary(res);
                           },
-                          itemCount: subjects!.length),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.grey.shade500,
+                                    spreadRadius: 0.5,
+                                    blurRadius: 1)
+                              ],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('${item.subject}'),
+                                const Icon(
+                                  Icons.arrow_forward_ios_outlined,
+                                  size: 18,
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      itemCount: subjects!.length),
+                  if (summaryList.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        const Text('Summary',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20,
+                            )),
+                        ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: summaryList.length,
+                            itemBuilder: (_, i) {
+                              final item = summaryList[i];
+                              return Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.grey.shade400,
+                                          spreadRadius: 0.5,
+                                          blurRadius: 0.5)
+                                    ],
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.black26)),
+                                padding: const EdgeInsets.all(8),
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Subject : ${item['sub_name']}',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                        )),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                        'Total No Of Question : ${item['question']}',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                        )),
+                                    const SizedBox(height: 12),
+                                    Text('Correct Answers : ${item['correct']}',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                        )),
+                                    const SizedBox(height: 12),
+                                    Text('Wrong Answers : ${item['wrong']}',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                        )),
+                                  ],
+                                ),
+                              );
+                            }),
+                      ],
                     )
-                  ],
-                ),
+                ],
               ),
             ),
     );

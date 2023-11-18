@@ -22,12 +22,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('user_uid', userCredential.user?.uid ?? '');
     prefs.setString('user_email', userCredential.user?.email ?? '');
-    print(userCredential.user);
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -43,7 +37,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             const SizedBox(
               height: 20,
             ),
-               const Center(
+            const Center(
               child: DefaultTextStyle(
                 style: TextStyle(
                   fontSize: 40.0,
@@ -55,7 +49,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ),
             ),
-           const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             TextField(
               textAlign: TextAlign.left,
               keyboardType: TextInputType.emailAddress,
@@ -93,8 +89,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     email: email,
                     password: password,
                   );
-                      
-                       FocusScope.of(context).unfocus(); 
+
+                  FocusScope.of(context).unfocus();
                   await saveUserDataToPrefs(userCredential);
 
                   setState(() {
@@ -102,7 +98,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   });
 
                   toastMsg(context, 'Registration Successful!');
-                   Navigator.of(context).pushAndRemoveUntil(
+                  Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
                         builder: (context) => const HomeScreen(),
                       ),
@@ -117,12 +113,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 }
               },
             ),
-            if(showSpinner )
-              const AppCircularWidget()
+            if (showSpinner) const AppCircularWidget()
           ],
         ),
       ),
     );
   }
 }
-

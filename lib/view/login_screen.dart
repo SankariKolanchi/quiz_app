@@ -15,9 +15,11 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
   bool showSpinner = false;
   String email = '';
   String password = '';
+
   final _auth = FirebaseAuth.instance;
 
   Future<void> saveUserDataToPrefs(UserCredential userCredential) async {
@@ -84,7 +86,7 @@ class LoginScreenState extends State<LoginScreen> {
                 setState(() {
                   showSpinner = true;
                 });
-               
+
                 try {
                   UserCredential userCredential =
                       await _auth.signInWithEmailAndPassword(
