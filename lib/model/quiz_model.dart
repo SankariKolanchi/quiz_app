@@ -84,12 +84,14 @@ class Question {
   List<String>? options;
   List<String>? answer;
   List<String>? submittedAnswer;
+  bool? isCorrectAnswer;
 
   Question({
     this.questionId,
     this.question,
     this.options,
     this.answer,
+    this.isCorrectAnswer,
     this.submittedAnswer,
   });
 
@@ -119,4 +121,9 @@ class Question {
             ? []
             : List<dynamic>.from(submittedAnswer!.map((x) => x)),
       };
+
+  @override
+  String toString() {
+    return 'submittedAnswer $submittedAnswer, answer $answer,isCorrectAnswer $isCorrectAnswer';
+  }
 }

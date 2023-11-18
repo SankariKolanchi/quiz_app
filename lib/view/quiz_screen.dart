@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:quizfirebase/utilis/constants.dart';
+import '../../utilis/constants.dart';
+
 import '../model/quiz_model.dart';
 
 class QuizWidget extends StatefulWidget {
@@ -19,8 +20,6 @@ class _QuizWidgetState extends State<QuizWidget> {
   List<Question>? _question = <Question>[];
   List<String>? submittedAnswer = [];
   int itemIndex = 0;
-  int correctAnswers = 0;
-  int wrongAnswers = 0;
 
   @override
   void initState() {
@@ -39,55 +38,33 @@ class _QuizWidgetState extends State<QuizWidget> {
       toastMsg(context, "Please Select Answer");
       return;
     }
-
-    final question = _question?[itemIndex];
-    if (question != null) {
-      question.submittedAnswer = submittedAnswer;
-      if (_checkAnswer(question)) {
-        correctAnswers++;
-      } else {
-        wrongAnswers++;
-      }
-    }
-
     itemIndex++;
 
     if (_question?.length == itemIndex) {
-      _showSummary();
-      return;
-    }
+      final subject = widget.subject;
+      final itemSubject = Subject(
+          questions: _question,
+          subjectId: subject.subjectId,
+          subject: subject.subject);
 
+      return Navigator.pop(
+          context, {'subject': itemSubject, 'isCompleted': true});
+    }
     _pageCtrl.animateToPage(itemIndex,
         duration: const Duration(milliseconds: 400), curve: Curves.easeOut);
     setState(() {});
     submittedAnswer?.clear();
   }
 
-  bool _checkAnswer(Question question) {
-    // Compare submitted answer with correct answer
-   return List.from(question.answer as Iterable).toString() == (submittedAnswer)?.toString();
-
-  }
-
-  void _showSummary() {
-    final subject = widget.subject;
-    subject.questions = _question;
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => QuizSummaryScreen(
-          correctAnswers: correctAnswers,
-          wrongAnswers: wrongAnswers,
-          totalQuestions: _question!.length,
-        ),
-      ),
-    );
-  }
-
-  void _onAnswerSubmit(String options, bool isMultiAnswer) {
+  void _onAnswerSubmit(int index, String options, bool isMultiAnswer) {
     if (!isMultiAnswer) {
+      final item = _question?[index];
+      item?.isCorrectAnswer =
+          item.answer?.where((element) => element == options).isNotEmpty;
+      debugPrint(
+          'item ${item?.isCorrectAnswer},== options $options,item.answer ${item?.answer}');
       submittedAnswer = [options];
+      item?.submittedAnswer = [options];
       setState(() {});
       return;
     }
@@ -142,7 +119,7 @@ class _QuizWidgetState extends State<QuizWidget> {
                                   : null;
                           return InkWell(
                             onTap: () =>
-                                _onAnswerSubmit(options, isMultiAnswer),
+                                _onAnswerSubmit(i, options, isMultiAnswer),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
@@ -195,49 +172,6 @@ class _QuizWidgetState extends State<QuizWidget> {
             ),
             onPressed: () => _onSubmit()),
       )),
-    );
-  }
-}
-
-class QuizSummaryScreen extends StatelessWidget {
-  final int correctAnswers;
-  final int wrongAnswers;
-  final int totalQuestions;
-
-  const QuizSummaryScreen({
-    Key? key,
-    required this.correctAnswers,
-    required this.wrongAnswers,
-    required this.totalQuestions,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Quiz Summary'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Correct Answers: $correctAnswers',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Wrong Answers: $wrongAnswers',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Total Questions: $totalQuestions',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

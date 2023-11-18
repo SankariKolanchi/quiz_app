@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quizfirebase/controller/api.dart';
+import 'package:quizfirebase/utilis/constants.dart';
 import 'package:quizfirebase/view/quiz_screen.dart';
 import 'package:quizfirebase/view/widgets/app_circular_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,17 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int _checkTotalAnswer(Subject subject) {
-    List<bool> answer = [];
-    for (final item in subject.questions!) {
-      final isAnswer = item.submittedAnswer
-              ?.where((p) => item.answer?.contains(p) == true)
-              .isNotEmpty ==
-          true;
-      if (isAnswer) {
-        answer.add(isAnswer);
-      }
-    }
-    return answer.length;
+    final answers =
+        subject.questions?.map((e) => e.isCorrectAnswer == true).toList();
+    return answers!.length;
   }
 
   void _questionSummmary(dynamic res) {
@@ -79,10 +72,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = res as Map<String, dynamic>;
       final subject = data['subject'] as Subject;
       final correctAnswer = _checkTotalAnswer(subject);
-      final wrong = subject.subject?.length == correctAnswer
+      final wrong = subject.questions?.length == correctAnswer
           ? 0
-          : subject.subject!.length - correctAnswer;
+          : subject.questions!.length - correctAnswer;
+
       final summary = {
+        'sub_id': subject.subjectId,
         'sub_name': subject.subject.toString(),
         'wrong': wrong,
         'correct': correctAnswer,
@@ -151,6 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         final item = subjects![i];
                         return InkWell(
                           onTap: () async {
+                            final isAlreadyTestDone = summaryList.singleWhere(
+                                (e) => e['sub_id'] == item.subjectId,orElse: ()=>{});
+                            if (isAlreadyTestDone.isNotEmpty) {
+                              toastMsg(context,
+                                  '${item.subject} is already completed.');
+                              return;
+                            }
                             final res = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
