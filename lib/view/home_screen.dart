@@ -62,8 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int _checkTotalAnswer(Subject subject) {
-    final answers =
-        subject.questions?.map((e) => e.isCorrectAnswer == true).toList();
+    print(' subject.questions ${subject.questions}');
+    final answers = subject.questions
+        ?.where(
+            (e) => (e.isCorrectAnswer != null && (e.isCorrectAnswer as bool)))
+        .toList();
+    print(' answers $answers');
     return answers!.length;
   }
 
