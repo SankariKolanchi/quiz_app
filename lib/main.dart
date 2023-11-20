@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -24,14 +25,9 @@ class _MyAppState extends State<MyApp> {
 
   Future userLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userEmail = (prefs.getString(
-          'user_email',
-        ) ??
-        ""); 
+    final userEmail = (prefs.getString('user_email') ?? "");
     isUserLoggedIn = userEmail.isNotEmpty;
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
