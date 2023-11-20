@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-import 'package:sign_in_button/sign_in_button.dart';
+import 'package:quizfirebase/utilis/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_screen.dart';
 import 'login_screen.dart';
@@ -18,8 +18,7 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-
-bool showSpinner = false;
+  bool showSpinner = false;
 
   @override
   Widget build(BuildContext context) {
@@ -65,33 +64,27 @@ bool showSpinner = false;
               child: const Text('Register'),
             ),
 
-
-
-
-
-
-            SizedBox(
-        height: 50,
-        child: SignInButton(
-          Buttons.google,
-          text: showSpinner ? "Logging In" : " Sign up with Google",
-          onPressed: () {
-            showSpinner ? null : _handleGoogleSignIn();
-          },
-        ),
-      ),
+            MaterialButton(
+              color: Colors.white,
+              
+              onPressed: () {
+                showSpinner ? null : _handleGoogleSignIn();
+              },
+              child: 
+                Text( showSpinner ? "Logging In" : " Sign up with Google"),
+            ),
           ],
         ),
       ),
     );
   }
 
-
-    Future<void> saveUserDataToPrefs(UserCredential userCredential) async {
+  Future<void> saveUserDataToPrefs(UserCredential userCredential) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('user_uid', userCredential.user?.uid ?? '');
     prefs.setString('user_email', userCredential.user?.email ?? '');
   }
+
   Future<void> _handleGoogleSignIn() async {
     setState(() {
       showSpinner = true;
@@ -110,7 +103,7 @@ bool showSpinner = false;
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
+       
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
       await saveUserDataToPrefs(userCredential);
@@ -124,6 +117,7 @@ bool showSpinner = false;
       setState(() {
         showSpinner = false;
       });
+
     } on FirebaseAuthException catch (e) {
       setState(() {
         showSpinner = false;
@@ -133,8 +127,9 @@ bool showSpinner = false;
       setState(() {
         showSpinner = false;
       });
-      debugPrint(error.toString());
+      
+       // ignore: use_build_context_synchronously
+       toastMsg(context, "Google Sign-in is failed!.");
     }
   }
-
 }
