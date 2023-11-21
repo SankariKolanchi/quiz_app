@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quizfirebase/controller/api.dart';
 import 'package:quizfirebase/utilis/constants.dart';
 import 'package:quizfirebase/view/quiz_screen.dart';
@@ -52,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _signOut() async {
+   await GoogleSignIn().signOut();
     await FirebaseAuth.instance.signOut();
     final pref = await SharedPreferences.getInstance();
     await pref.clear();
