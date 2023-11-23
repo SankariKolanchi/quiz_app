@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../view/home_screen.dart';
 import '../view/welcome_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'pages/home.dart'; // Import the second screen
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +48,9 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: isUserLoggedIn ? const HomeScreen() : const WelcomeScreen(),
+      routes: {
+        '/secondScreen': (context) => const  Home(), // Add route for the second screen
+      },
     );
   }
 }

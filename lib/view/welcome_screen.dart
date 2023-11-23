@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quizfirebase/utilis/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../pages/home.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 import 'registration_screen.dart';
@@ -62,6 +63,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         builder: ((context) => const RegistrationScreen())));
               },
               child: const Text('Register'),
+            ),
+              ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: ((context) => const Home())));
+              },
+              child: const Text('Phone number '),
             ),
 
             MaterialButton(

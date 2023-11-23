@@ -35,8 +35,8 @@ dependencies:
   dio:
 
   #firebase
-  firebase_auth: ^4.10.0
-  firebase_core: ^2.16.0
+  firebase_auth: 
+  firebase_core: 
 
   #loical
   shared_preferences: ^2.0.11
