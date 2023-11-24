@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quizfirebase/utilis/constants.dart';
+import 'package:quizfirebase/view/onboarding/mobile_login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../pages/home.dart';
-import 'home_screen.dart';
+import '../home_screen.dart';
 import 'login_screen.dart';
 import 'registration_screen.dart';
 
@@ -44,44 +44,54 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
             ),
             const SizedBox(
-              height: 48.0,
+              height: 40.0,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: ((context) => const LoginScreen())));
-              },
-              child: const Text('Log in'),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: ((context) => const LoginScreen())));
+                },
+                child: const Text('Log in'),
+              ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: ((context) => const RegistrationScreen())));
-              },
-              child: const Text('Register'),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: ((context) => const RegistrationScreen())));
+                },
+                child: const Text('Register'),
+              ),
             ),
-              ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: ((context) => const Home())));
-              },
-              child: const Text('Phone number '),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: ((context) => const MobileLogin())));
+                },
+                child: const Text('Phone number '),
+              ),
             ),
-
-            MaterialButton(
-              color: Colors.white,
-              
-              onPressed: () {
-                showSpinner ? null : _handleGoogleSignIn();
-              },
-              child: 
-                Text( showSpinner ? "Logging In" : " Sign up with Google"),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: MaterialButton(
+                color: Colors.white,
+                onPressed: () {
+                  showSpinner ? null : _handleGoogleSignIn();
+                },
+                child:
+                    Text(showSpinner ? "Logging In" : " Sign up with Google"),
+              ),
             ),
           ],
         ),
@@ -113,7 +123,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-       
+
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
       await saveUserDataToPrefs(userCredential);
@@ -127,7 +137,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       setState(() {
         showSpinner = false;
       });
-
     } on FirebaseAuthException catch (e) {
       setState(() {
         showSpinner = false;
@@ -137,9 +146,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       setState(() {
         showSpinner = false;
       });
-      
-       // ignore: use_build_context_synchronously
-       toastMsg(context, "Google Sign-in is failed!.");
+
+      // ignore: use_build_context_synchronously
+      toastMsg(context, "Google Sign-in is failed!.");
     }
   }
 }

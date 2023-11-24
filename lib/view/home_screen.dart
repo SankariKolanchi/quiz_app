@@ -8,7 +8,7 @@ import 'package:quizfirebase/view/widgets/app_circular_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/quiz_model.dart';
-import 'welcome_screen.dart';
+import 'onboarding/welcome_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Welcome : ${userEmail.split('@').first}".toUpperCase(),
+                    "Welcome : ${userEmail.contains("@")? userEmail.split('@').first : userEmail}".toUpperCase(),
                     style: const TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.w500,

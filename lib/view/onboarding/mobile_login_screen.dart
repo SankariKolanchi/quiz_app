@@ -1,37 +1,42 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:quizfirebase/utilis/constants.dart';
+import 'package:quizfirebase/view/home_screen.dart';
 
-import 'done.dart';
-import 'numericpad.dart';
+import '../../utilis/shared_pref.dart';
+import '../widgets/numeric_pad_widget.dart';
 
-
-class Home extends StatefulWidget {
-  const Home({super.key});
+class MobileLogin extends StatefulWidget {
+  const MobileLogin({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  State<MobileLogin> createState() => _MobileLoginState();
 }
 
-class _HomeState extends State<Home> {
-  TextEditingController _codecontroller = new TextEditingController();
+class _MobileLoginState extends State<MobileLogin> {
+  final TextEditingController _codecontroller = TextEditingController();
   String phoneNumber = "", data = "";
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String smscode = "";
+  bool isLoading = false;
 
-  _signInWithMobileNumber() async {
-    UserCredential _credential;
-    User user;
+  void _signInWithMobileNumber() async {
+    _updateState(true);
     try {
-     final res = await _auth.verifyPhoneNumber(
+      await _auth.verifyPhoneNumber(
           phoneNumber: '+91${data.trim()}',
           verificationCompleted: (PhoneAuthCredential authCredential) async {
             await _auth.signInWithCredential(authCredential).then((value) {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => const Done()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()));
             });
           },
           verificationFailed: ((error) {
-            print("error $error"); 
+            _updateState(false);
+            debugPrint("error $error");
+            _toast('Mobile auth is failed');
           }),
           codeSent: (String verificationId, [int? forceResendingToken]) {
             showDialog(
@@ -44,30 +49,42 @@ class _HomeState extends State<Home> {
                         children: [
                           TextField(
                             controller: _codecontroller,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(6)
+                            ],
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                                counterText: '', border: InputBorder.none),
                           )
                         ],
                       ),
                       actions: [
                         ElevatedButton(
                             onPressed: () {
-                              FirebaseAuth auth = FirebaseAuth.instance;
                               smscode = _codecontroller.text;
-                              PhoneAuthCredential _credential =
+                              PhoneAuthCredential credential =
                                   PhoneAuthProvider.credential(
                                       verificationId: verificationId,
                                       smsCode: smscode);
-                              auth
-                                  .signInWithCredential(_credential)
-                                  .then((result) {
+                              _auth
+                                  .signInWithCredential(credential)
+                                  .then((result) async {
                                 if (result != null) {
-                                  Navigator.pop(context);
-                                  Navigator.push(
+                                  await SharedPref.saveUserDataToPrefs(user: {
+                                    'id': result.user?.uid,
+                                    'email': result.user?.phoneNumber,
+                                  
+                                  }, isMobileAuth: true);
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.pushAndRemoveUntil(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => const Done()));
+                                          builder: (context) =>
+                                              const HomeScreen()),
+                                      (Route<dynamic> route) => false);
                                 }
                               }).catchError((e) {
-                              
+                                _toast('Mobile auth is failed');
                               });
                             },
                             child: const Text("Done"))
@@ -79,8 +96,18 @@ class _HomeState extends State<Home> {
           },
           timeout: const Duration(seconds: 45));
     } catch (e) {
-        print("e ${e}");
+      debugPrint("e ${e.toString()}");
+      _toast('Mobile auth is failed');
     }
+  }
+
+  void _toast(String msg) {
+    toastMsg(context, msg);
+  }
+
+  void _updateState(bool loading) {
+    isLoading = loading;
+    setState(() {});
   }
 
   @override
@@ -118,9 +145,9 @@ class _HomeState extends State<Home> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    SizedBox(
-                      height: 130,
-                      child: Image.asset('images/holding-phone.png'),
+                    Image.asset(
+                      'assets/images/phn_auth.png',
+                      height: 100,
                     ),
                     const Padding(
                       padding:
@@ -146,10 +173,11 @@ class _HomeState extends State<Home> {
                 ),
               ),
               child: Padding(
+                //
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: <Widget>[
-                    Container(
+                    SizedBox(
                       width: 230,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,20 +216,27 @@ class _HomeState extends State<Home> {
                         },
                         child: Container(
                           decoration: const BoxDecoration(
-                            color: Color(0xFFFFDC3D),
+                            color: Colors.blue,
                             borderRadius: BorderRadius.all(
                               Radius.circular(15),
                             ),
                           ),
-                          child: const Center(
-                            child: Text(
-                              "Continue",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                          child: isLoading
+                              ? const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: CupertinoActivityIndicator(
+                                  color: Colors.white,
+                                ),
+                              )
+                              : const Center(
+                                  child: Text(
+                                    "Submit",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                     ),

@@ -1,28 +1,27 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../utilis/constants.dart';
-import 'home_screen.dart';
-import 'widgets/app_circular_widget.dart';
+import 'package:flutter/material.dart'; 
 
-class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({Key? key}) : super(key: key);
+import '../../utilis/constants.dart';
+import '../../utilis/shared_pref.dart';
+import '../home_screen.dart';
+import '../widgets/app_circular_widget.dart';
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  _RegistrationScreenState createState() => _RegistrationScreenState();
+  LoginScreenState createState() => LoginScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   bool showSpinner = false;
   String email = '';
   String password = '';
-  final _auth = FirebaseAuth.instance;
 
-  Future<void> saveUserDataToPrefs(UserCredential userCredential) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('user_uid', userCredential.user?.uid ?? '');
-    prefs.setString('user_email', userCredential.user?.email ?? '');
-  }
+  final _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +44,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   color: Colors.black54,
                 ),
                 child: Text(
-                  'Register',
+                  'Login ',
                 ),
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             TextField(
+              controller: _emailController,
               textAlign: TextAlign.left,
               keyboardType: TextInputType.emailAddress,
               onChanged: (value) {
@@ -65,6 +63,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               height: 8.0,
             ),
             TextField(
+              controller: _passwordController,
               textAlign: TextAlign.left,
               obscureText: true,
               onChanged: (value) {
@@ -85,31 +84,33 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                 try {
                   UserCredential userCredential =
-                      await _auth.createUserWithEmailAndPassword(
-                    email: email,
-                    password: password,
+                      await _auth.signInWithEmailAndPassword(
+                    email: _emailController.text,
+                    password: _passwordController.text.trim(),
                   );
 
-                  FocusScope.of(context).unfocus();
-                  await saveUserDataToPrefs(userCredential);
+                  await SharedPref.saveUserDataToPrefs(userCredential:userCredential);
 
                   setState(() {
                     showSpinner = false;
                   });
-
-                  toastMsg(context, 'Registration Successful!');
+                  // ignore: use_build_context_synchronously
+                  FocusScope.of(context).unfocus();
+                  toastMsg(context, 'Login Successful!');
                   Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
                         builder: (context) => const HomeScreen(),
                       ),
                       (Route<dynamic> route) => false);
+
+                  debugPrint('Successfully Login');
                 } catch (e) {
                   setState(() {
                     showSpinner = false;
                   });
 
-                  // ignore: use_build_context_synchronously
-                  toastMsg(context, 'Registration Failed: $e');
+                  toastMsg(context, 'Login Failed: $e');
+                  debugPrint('e $e');
                 }
               },
             ),

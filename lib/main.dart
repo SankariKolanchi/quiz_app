@@ -1,10 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../view/home_screen.dart';
-import '../view/welcome_screen.dart';
-
-import 'pages/home.dart'; // Import the second screen
+import 'view/home_screen.dart';
+import 'view/onboarding/welcome_screen.dart';
+ 
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,13 +43,11 @@ class _MyAppState extends State<MyApp> {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       home: isUserLoggedIn ? const HomeScreen() : const WelcomeScreen(),
-      routes: {
-        '/secondScreen': (context) => const  Home(), // Add route for the second screen
-      },
+      
     );
   }
 }
